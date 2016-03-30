@@ -6,6 +6,10 @@ public class General : MonoBehaviour {
 
     List<GameObject> units = new List<GameObject>();
     List<GameObject> selectedUnits = new List<GameObject>();
+    List<GameObject> selectorCircles = new List<GameObject>();
+
+    GameObject _circleSelector;
+
     // Use this for initialization
     void Start () {
         GameObject soldier = Resources.Load<GameObject>("Units/Soldier");
@@ -16,14 +20,20 @@ public class General : MonoBehaviour {
 
             units.Add(soldier);
         }
-        
+
+        _circleSelector = Resources.Load<GameObject>("Prefabs/Circle");
     }
 	
 	// Update is called once per frame
 	void Update () {
         if (Input.GetMouseButtonDown(0))
         {
+            foreach (var circle in selectorCircles)
+                Destroy(circle);
+
+            selectorCircles.Clear();
             selectedUnits.Clear();
+
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             foreach (var unit in units)
             {
@@ -34,6 +44,9 @@ public class General : MonoBehaviour {
                 if(unit.GetComponent<Unit>().Radius > length)
                 {
                     selectedUnits.Add(unit);
+                    var circleSelector = Instantiate(_circleSelector, new Vector2(unit.transform.position.x, unit.transform.position.y), new Quaternion()) as GameObject;
+                    circleSelector.transform.parent = unit.transform;
+                    selectorCircles.Add(circleSelector);
                     break;
                 }
             }
@@ -45,7 +58,8 @@ public class General : MonoBehaviour {
             {
                 Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-                unit.transform.position = mousePos;
+                Movement movement = unit.GetComponent<Movement>();
+                movement.Run(mousePos);
             }
         }
     }

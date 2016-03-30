@@ -43,10 +43,14 @@ public class MapLoader : MonoBehaviour {
         SpriteRenderer spriteRendererTree = treeObject.AddComponent<SpriteRenderer>();
         SpriteRenderer spriteRendererLand = landObject.AddComponent<SpriteRenderer>();
         SpriteRenderer spriteRendererRock = rockObject.AddComponent<SpriteRenderer>();
-
+        
         spriteRendererTree.sprite = spriteTree;
         spriteRendererLand.sprite = spriteLand;
         spriteRendererRock.sprite = spriteRock;
+
+        spriteRendererRock.sortingLayerName = "Background";
+        spriteRendererLand.sortingLayerName = "Background";
+        spriteRendererTree.sortingLayerName = "Background";
 
         for (int i = 0, orig_i = 0; i < texMap.height; i++)
             for (int j = 0; j < texMap.width; j++, orig_i++)
