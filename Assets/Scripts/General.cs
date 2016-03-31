@@ -21,6 +21,10 @@ public class General : MonoBehaviour {
             units.Add(soldier);
         }
 
+        GameObject barracks = Resources.Load<GameObject>("Units/Barracks");
+        barracks = Instantiate(barracks, new Vector2(6, 6), new Quaternion()) as GameObject;
+        units.Add(barracks);
+
         _circleSelector = Resources.Load<GameObject>("Prefabs/Circle");
     }
 	
@@ -40,11 +44,13 @@ public class General : MonoBehaviour {
                 var unitPos = unit.transform.position;
 
                 float length = Mathf.Sqrt((unitPos.x - mousePos.x) * (unitPos.x - mousePos.x) + (unitPos.y - mousePos.y) * (unitPos.y - mousePos.y));
+                float radius = unit.GetComponent<Unit>().Radius;
 
-                if(unit.GetComponent<Unit>().Radius > length)
+                if(radius > length)
                 {
                     selectedUnits.Add(unit);
                     var circleSelector = Instantiate(_circleSelector, new Vector2(unit.transform.position.x, unit.transform.position.y), new Quaternion()) as GameObject;
+                    //circleSelector.GetComponent<SpriteRenderer>().material.SetFloat("_Radius", radius);
                     circleSelector.transform.parent = unit.transform;
                     selectorCircles.Add(circleSelector);
                     break;
@@ -59,7 +65,8 @@ public class General : MonoBehaviour {
                 Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
                 Movement movement = unit.GetComponent<Movement>();
-                movement.Run(mousePos);
+                if(movement != null)
+                    movement.Run(mousePos);
             }
         }
     }
