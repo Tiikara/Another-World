@@ -6,7 +6,7 @@ public class Movement : IAction
 
     public float Speed;
 
-    bool active;
+    bool active = false;
     Vector2 targetPosition;
 
 	// Use this for initialization

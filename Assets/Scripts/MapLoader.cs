@@ -10,6 +10,8 @@ public class MapLoader : MonoBehaviour {
     }
 
     TypeLand[,] mapArray;
+    public float MapSizeWidth;
+    public float MapSizeHeight;
 
     // Use this for initialization
     void Start()
@@ -31,6 +33,9 @@ public class MapLoader : MonoBehaviour {
             {
                 mapArray[i, j] = types[pix[orig_i]];
             }
+
+        MapSizeWidth = (texMap.width - 1) * 0.5f;
+        MapSizeHeight = (texMap.height - 1) * 0.5f;
 
         Sprite spriteLand = Resources.Load("Maps/Sprites/desert", typeof(Sprite)) as Sprite;
         Sprite spriteTree = Resources.Load("Maps/Sprites/tree", typeof(Sprite)) as Sprite;

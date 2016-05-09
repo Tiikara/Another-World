@@ -3,27 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class General : MonoBehaviour {
-
-    List<GameObject> units = new List<GameObject>();
-    List<GameObject> selectedUnits = new List<GameObject>();
+    
+    List<Unit> selectedUnits = new List<Unit>();
     List<GameObject> selectorCircles = new List<GameObject>();
+
+    UnitsController unitsController;
 
     GameObject _circleSelector;
 
     // Use this for initialization
     void Start () {
-        GameObject soldier = Resources.Load<GameObject>("Units/Soldier");
+        unitsController = GetComponent<UnitsController>();
         
-        for(int i=0;i<3;i++)
-        {
-            soldier = Instantiate(soldier, new Vector2(i*2, 0), new Quaternion()) as GameObject;
-
-            units.Add(soldier);
-        }
-
         GameObject barracks = Resources.Load<GameObject>("Units/Barracks");
-        barracks = Instantiate(barracks, new Vector2(6, 6), new Quaternion()) as GameObject;
-        units.Add(barracks);
+        unitsController.CreateUnit(barracks, new Vector2(6, 6));
 
         _circleSelector = Resources.Load<GameObject>("Prefabs/Circle");
     }
@@ -39,7 +32,7 @@ public class General : MonoBehaviour {
             selectedUnits.Clear();
 
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            foreach (var unit in units)
+            foreach (var unit in unitsController.Units)
             {
                 var unitPos = unit.transform.position;
 
@@ -69,5 +62,11 @@ public class General : MonoBehaviour {
                     movement.Run(mousePos);
             }
         }
+    }
+
+    public void OnMouseDown()
+    {
+        Debug.Log("down");
+        //Application.LoadLevel("SomeLevel");
     }
 }
