@@ -10,7 +10,9 @@ public class MapLoader : MonoBehaviour {
     }
 
     TypeLand[,] mapArray;
+    [HideInInspector]
     public float MapSizeWidth;
+    [HideInInspector]
     public float MapSizeHeight;
 
     // Use this for initialization

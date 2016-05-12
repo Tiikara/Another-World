@@ -8,16 +8,28 @@ public class General : MonoBehaviour {
     List<GameObject> selectorCircles = new List<GameObject>();
 
     UnitsController unitsController;
+    TeamInfo teamInfo;
+
+    int controlId = 0;
+
+    bool isInit = false;
+
+    public int ControlId
+    {
+        get
+        {
+            return controlId;
+        }
+    }
+        
 
     GameObject _circleSelector;
 
     // Use this for initialization
     void Start () {
         unitsController = GetComponent<UnitsController>();
+        teamInfo = GetComponent<TeamInfo>();
         
-        GameObject barracks = Resources.Load<GameObject>("Units/Barracks");
-        unitsController.CreateUnit(barracks, new Vector2(6, 6));
-
         _circleSelector = Resources.Load<GameObject>("Prefabs/Circle");
     }
 	
@@ -45,6 +57,27 @@ public class General : MonoBehaviour {
                     var circleSelector = Instantiate(_circleSelector, new Vector2(unit.transform.position.x, unit.transform.position.y), new Quaternion()) as GameObject;
                     //circleSelector.GetComponent<SpriteRenderer>().material.SetFloat("_Radius", radius);
                     circleSelector.transform.parent = unit.transform;
+                    Color colorCircle = new Color();
+
+                    if(controlId == unit.OwnerId)
+                    {
+                        colorCircle = Color.green;
+                    }
+                    else
+                    switch(teamInfo.GetStatus(controlId, unit.OwnerId))
+                    {
+                        case TeamInfo.Status.War:
+                            colorCircle = Color.red;
+                            break;
+                        case TeamInfo.Status.Neutral:
+                            colorCircle = Color.yellow;
+                            break;
+                        case TeamInfo.Status.Ally:
+                            colorCircle = Color.blue;
+                            break;
+                    }
+
+                    circleSelector.GetComponent<SpriteRenderer>().material.SetColor("_Color", colorCircle);
                     selectorCircles.Add(circleSelector);
                     break;
                 }
@@ -55,12 +88,25 @@ public class General : MonoBehaviour {
         {
             foreach(var unit in selectedUnits)
             {
-                Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if(controlId == unit.OwnerId)
+                {
+                    Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-                Movement movement = unit.GetComponent<Movement>();
-                if(movement != null)
-                    movement.Run(mousePos);
+                    Movement movement = unit.GetComponent<Movement>();
+                    if (movement != null)
+                        movement.Run(mousePos);
+                }
             }
+        }
+
+        if(isInit == false)
+        {
+            GameObject barracks = Resources.Load<GameObject>("Units/Barracks");
+            unitsController.CreateUnit(barracks, new Vector2(6, 6), 0);
+
+            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(9, 9), 1);
+
+            isInit = true;
         }
     }
 

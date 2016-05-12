@@ -64,7 +64,7 @@ public class BuildController : MonoBehaviour {
 
             if(startTimeSecsBuilding + buildInfo.TimeBuildSec < nowSeconds)
             {
-                var unit = unitsController.CreateUnit(buildInfo.gameObject, barracks.transform.position);
+                var unit = unitsController.CreateUnit(buildInfo.gameObject, barracks.transform.position, 0);
                 unit.GetComponent<Movement>().Run(new Vector2(barracks.transform.position.x - 0.5f, barracks.transform.position.y - 0.5f));
                 buildInfo = null;
                 StartBuild();
