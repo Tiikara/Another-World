@@ -17,6 +17,12 @@ public class UnitsController : MonoBehaviour {
         }
     }
 
+    public void KillUnit(Unit unit)
+    {
+        units.Remove(unit);
+        Destroy(unit.gameObject);
+    }
+
     public Unit CreateUnit(GameObject gameObject, Vector3 position, int ownerId)
     {
         GameObject obj = Instantiate(gameObject, position, new Quaternion()) as GameObject;
@@ -24,7 +30,7 @@ public class UnitsController : MonoBehaviour {
         Unit unit = obj.GetComponent<Unit>();
 
         unit.OwnerId = ownerId;
-
+        
         Color selectionColor = Color.black;
 
         if(general.ControlId == ownerId)

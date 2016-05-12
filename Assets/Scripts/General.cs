@@ -86,7 +86,39 @@ public class General : MonoBehaviour {
         else
         if(Input.GetMouseButtonDown(1))
         {
-            foreach(var unit in selectedUnits)
+            if(selectedUnits.Count != 0)
+                foreach (var unit in unitsController.Units)
+                {
+                    var unitPos = unit.transform.position;
+                    Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    float lengthClicked = Mathf.Sqrt((unitPos.x - mousePos.x) * (unitPos.x - mousePos.x) + (unitPos.y - mousePos.y) * (unitPos.y - mousePos.y));
+                    float radius = unit.GetComponent<Unit>().Radius;
+
+                    if (radius > lengthClicked)
+                    {
+                        if (controlId != unit.OwnerId)
+                        {
+                            Attack attack = selectedUnits[0].GetComponent<Attack>();
+
+                            if (attack == null)
+                                break;
+                            
+                            var unitPos2 = selectedUnits[0].transform.position;
+
+                            float length = Mathf.Sqrt((unitPos.x - unitPos2.x) * (unitPos.x - unitPos2.x) + (unitPos.y - unitPos2.y) * (unitPos.y - unitPos2.y));
+
+                            if (attack.AttackRadius > length)
+                            {
+                                attack.AttackUnit(unit);
+                                return;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+            foreach (var unit in selectedUnits)
             {
                 if(controlId == unit.OwnerId)
                 {
@@ -105,6 +137,7 @@ public class General : MonoBehaviour {
             unitsController.CreateUnit(barracks, new Vector2(6, 6), 0);
 
             unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(9, 9), 1);
+            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(5, 9), 2);
 
             isInit = true;
         }
