@@ -31,11 +31,15 @@ public class HealthVisualization : MonoBehaviour {
         {
             healthBar.GetComponent<SpriteRenderer>().enabled = true;
             healthBarBorder.GetComponent<SpriteRenderer>().enabled = true;
+
+            isVisible = true;
         }
         else if(isVisible == true && value == 1)
         {
             healthBar.GetComponent<SpriteRenderer>().enabled = false;
             healthBarBorder.GetComponent<SpriteRenderer>().enabled = false;
+
+            isVisible = false;
         }
 
         healthBar.transform.localScale = new Vector3(value * 90, 1);
