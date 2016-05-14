@@ -19,6 +19,7 @@ public class UnitsController : MonoBehaviour {
 
     public void KillUnit(Unit unit)
     {
+        Instantiate(unit.OnDestroyObject, unit.transform.position, new Quaternion());
         units.Remove(unit);
         Destroy(unit.gameObject);
     }

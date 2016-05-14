@@ -4,6 +4,11 @@ using System;
 
 public class Attack : IAction {
 
+    class AttackParameters : IActionParameters
+    {
+        public Unit attackedUnit;
+    }
+
     public float Damage;
     public float AttackPerSecond;
     public float AttackRadius;
@@ -25,7 +30,29 @@ public class Attack : IAction {
 
     public void AttackUnit(Unit unit)
     {
-        attackedUnit = unit;
+        var unitPos = transform.position;
+        var attackedUnitPos = unit.transform.position;
+
+        float length = Mathf.Sqrt((unitPos.x - attackedUnitPos.x) * (unitPos.x - attackedUnitPos.x) + (unitPos.y - attackedUnitPos.y) * (unitPos.y - attackedUnitPos.y));
+
+        if (AttackRadius > length)
+        {
+            var attackParams = new AttackParameters();
+            attackParams.attackedUnit = unit;
+            GetComponent<ActionController>().AddMainToQueue(this, attackParams);
+            return;
+        }
+
+        var movement = GetComponent<Movement>();
+        
+        if(movement != null)
+        {
+            movement.RunToUnitAttackRadius(unit);
+
+            var attackParams = new AttackParameters();
+            attackParams.attackedUnit = unit;
+            GetComponent<ActionController>().AddToQueue(this, attackParams);
+        }
     }
 
     // Use this for initialization
@@ -37,17 +64,28 @@ public class Attack : IAction {
 	
 	// Update is called once per frame
 	void Update () {
-	    if(attackedUnit != null)
+	    
+	}
+
+    public override void Activate(IActionParameters actionParameters)
+    {
+        AttackParameters attackParameters = (AttackParameters)actionParameters;
+        attackedUnit = attackParameters.attackedUnit;
+    }
+
+    public override void UpdateAction()
+    {
+        if (attackedUnit != null)
         {
             var attackUnitPos = transform.position;
             var attackedUnitPos = attackedUnit.transform.position;
 
-            float length = Mathf.Sqrt((attackUnitPos.x - attackedUnitPos.x) * (attackUnitPos.x - attackedUnitPos.x) + 
+            float length = Mathf.Sqrt((attackUnitPos.x - attackedUnitPos.x) * (attackUnitPos.x - attackedUnitPos.x) +
                 (attackUnitPos.y - attackedUnitPos.y) * (attackUnitPos.y - attackedUnitPos.y));
 
-            if(AttackRadius > length)
+            if (AttackRadius > length)
             {
-                if(DateTime.Now >= timeLastAttack.AddSeconds(attackCooldown))
+                if (DateTime.Now >= timeLastAttack.AddSeconds(attackCooldown))
                 {
                     var hitpoints = attackedUnit.GetComponent<HitPoints>();
 
@@ -61,8 +99,9 @@ public class Attack : IAction {
             }
             else
             {
+                AttackUnit(attackedUnit);
                 attackedUnit = null;
             }
         }
-	}
+    }
 }

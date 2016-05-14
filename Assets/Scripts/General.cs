@@ -55,7 +55,7 @@ public class General : MonoBehaviour {
                 {
                     selectedUnits.Add(unit);
                     var circleSelector = Instantiate(_circleSelector, new Vector2(unit.transform.position.x, unit.transform.position.y), new Quaternion()) as GameObject;
-                    //circleSelector.GetComponent<SpriteRenderer>().material.SetFloat("_Radius", radius);
+                    circleSelector.GetComponent<SpriteRenderer>().material.SetFloat("_Radius", radius);
                     circleSelector.transform.parent = unit.transform;
                     Color colorCircle = new Color();
 
@@ -96,24 +96,21 @@ public class General : MonoBehaviour {
 
                     if (radius > lengthClicked)
                     {
-                        if (controlId != unit.OwnerId)
+                        if (controlId != unit.OwnerId && teamInfo.GetStatus(controlId, unit.OwnerId) == TeamInfo.Status.War)
                         {
                             Attack attack = selectedUnits[0].GetComponent<Attack>();
 
                             if (attack == null)
                                 break;
-                            
-                            var unitPos2 = selectedUnits[0].transform.position;
 
-                            float length = Mathf.Sqrt((unitPos.x - unitPos2.x) * (unitPos.x - unitPos2.x) + (unitPos.y - unitPos2.y) * (unitPos.y - unitPos2.y));
-
-                            if (attack.AttackRadius > length)
-                            {
-                                attack.AttackUnit(unit);
-                                return;
-                            }
-
-                            break;
+                            attack.AttackUnit(unit);
+                            return;
+                        }
+                        else
+                        {
+                            Movement movement = unit.GetComponent<Movement>();
+                            if (movement != null)
+                                movement.RunToUnit(unit);
                         }
                     }
                 }
@@ -139,13 +136,9 @@ public class General : MonoBehaviour {
             unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(9, 9), 1);
             unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(5, 9), 2);
 
+            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(2, 5), 2);
+
             isInit = true;
         }
-    }
-
-    public void OnMouseDown()
-    {
-        Debug.Log("down");
-        //Application.LoadLevel("SomeLevel");
     }
 }

@@ -5,6 +5,7 @@ public class Unit : MonoBehaviour {
     public string Name;
     public int OwnerId;
     public float Radius;
+    public GameObject OnDestroyObject;
 
     Material materialSelection = null;
     Color selectionColor = Color.red;
@@ -14,6 +15,14 @@ public class Unit : MonoBehaviour {
         selectionColor = color;
         if(materialSelection != null)
             materialSelection.SetColor("_Color", selectionColor);
+    }
+
+    void Awake()
+    {
+        if (GetComponent<IAction>())
+        {
+            gameObject.AddComponent<ActionController>();
+        }
     }
 
     void Start() {
