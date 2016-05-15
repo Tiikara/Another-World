@@ -7,7 +7,8 @@ public class Movement : IAction
     class MovementParameters : IActionParameters
     {
         public Unit moveToUnit = null;
-        public Unit moveToUnitCheckAttackRadius = null;
+        public Unit moveToUnitCheckRadius = null;
+        public float radius;
         public Vector2 ?targetPosition = null;
     }
 
@@ -24,25 +25,26 @@ public class Movement : IAction
 	    
 	}
 
-    public void RunToUnitAttackRadius(Unit unit)
+    public void RunToUnitRadius(Unit unit, float radius)
     {
         MovementParameters movementParams = new MovementParameters();
-        movementParams.moveToUnitCheckAttackRadius = unit;
-        GetComponent<ActionController>().AddMainToQueue(this, movementParams);
+        movementParams.moveToUnitCheckRadius = unit;
+        movementParams.radius = radius;
+        GetComponent<ActionController>().AddToQueue(this, movementParams);
     }
 
     public void RunToUnit(Unit unit)
     {
         MovementParameters movementParams = new MovementParameters();
         movementParams.moveToUnit = unit;
-        GetComponent<ActionController>().AddMainToQueue(this, movementParams);
+        GetComponent<ActionController>().AddToQueue(this, movementParams);
     }
 
     public void Run(Vector2 target)
     {
         MovementParameters movementParams = new MovementParameters();
         movementParams.targetPosition = target;
-        GetComponent<ActionController>().AddMainToQueue(this, movementParams);
+        GetComponent<ActionController>().AddToQueue(this, movementParams);
     }
 
     public override bool IsEndedAction()
@@ -67,9 +69,9 @@ public class Movement : IAction
         {
             targetPos = (Vector2)moveParams.targetPosition;
         }
-        else if (moveParams.moveToUnitCheckAttackRadius != null)
+        else if (moveParams.moveToUnitCheckRadius != null)
         {
-            targetPos = moveParams.moveToUnitCheckAttackRadius.transform.position;
+            targetPos = moveParams.moveToUnitCheckRadius.transform.position;
         }
 
         float step = Speed * Time.deltaTime;
@@ -80,21 +82,16 @@ public class Movement : IAction
         {
             moveEnd = true;
         }
-        else if (moveParams.moveToUnitCheckAttackRadius != null)
+        else if (moveParams.moveToUnitCheckRadius != null)
         {
-            var attackComponent = GetComponent<Attack>();
+            var attackUnitPos = transform.position;
+            var attackedUnitPos = moveParams.moveToUnitCheckRadius.transform.position;
 
-            if(attackComponent != null)
-            {
-                var attackUnitPos = transform.position;
-                var attackedUnitPos = moveParams.moveToUnitCheckAttackRadius.transform.position;
+            float length = Mathf.Sqrt((attackUnitPos.x - attackedUnitPos.x) * (attackUnitPos.x - attackedUnitPos.x) +
+                (attackUnitPos.y - attackedUnitPos.y) * (attackUnitPos.y - attackedUnitPos.y));
 
-                float length = Mathf.Sqrt((attackUnitPos.x - attackedUnitPos.x) * (attackUnitPos.x - attackedUnitPos.x) +
-                    (attackUnitPos.y - attackedUnitPos.y) * (attackUnitPos.y - attackedUnitPos.y));
-
-                if (attackComponent.AttackRadius > length)
-                    moveEnd = true;
-            }
+            if (moveParams.radius > length)
+                moveEnd = true;
         }
     }
 }

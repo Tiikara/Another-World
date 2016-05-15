@@ -12,6 +12,7 @@ public class BuildController : MonoBehaviour {
     GameObject barracks;
 
     UnitsController unitsController;
+    ResourcesController resourcesController;
 
     DateTime timeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -27,14 +28,19 @@ public class BuildController : MonoBehaviour {
     void Start()
     {
         unitsController = GetComponent<UnitsController>();
-        
+        resourcesController = GetComponent<ResourcesController>();
     }
 
     public void OnClickBuildUnit(GameObject unit)
     {
-        queueBuildUnits.Enqueue(unit.GetComponent<BuildInfo>());
-        
-        StartBuild();
+        BuildInfo buildInfo = unit.GetComponent<BuildInfo>();
+
+        if(resourcesController.isHave(buildInfo.Cost))
+        {
+            resourcesController.Reduce(buildInfo.Cost);
+            queueBuildUnits.Enqueue(buildInfo);
+            StartBuild();
+        }
     }
 
     void StartBuild()
@@ -65,7 +71,7 @@ public class BuildController : MonoBehaviour {
             if(startTimeSecsBuilding + buildInfo.TimeBuildSec < nowSeconds)
             {
                 var unit = unitsController.CreateUnit(buildInfo.gameObject, barracks.transform.position, 0);
-                unit.GetComponent<Movement>().Run(new Vector2(barracks.transform.position.x - 0.5f, barracks.transform.position.y - 0.5f));
+                unit.GetComponent<Movement>().Run(new Vector2(barracks.transform.position.x - 0.9f, barracks.transform.position.y - 0.9f));
                 buildInfo = null;
                 StartBuild();
             }

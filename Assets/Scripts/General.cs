@@ -103,14 +103,30 @@ public class General : MonoBehaviour {
                             if (attack == null)
                                 break;
 
+                            attack.GetComponent<ActionController>().ClearQueue();
                             attack.AttackUnit(unit);
+                            return;
+                        }
+                        else if(selectedUnits[0].GetComponent<ResourceCollection>() != null && 
+                            unit.GetComponent<BunchResource>() != null)
+                        {
+                            var bunchRes = unit.GetComponent<BunchResource>();
+                            var resColl = selectedUnits[0].GetComponent<ResourceCollection>();
+
+                            resColl.GetComponent<ActionController>().ClearQueue();
+                            resColl.CollectResource(bunchRes);
                             return;
                         }
                         else
                         {
-                            Movement movement = unit.GetComponent<Movement>();
+                            Movement movement = selectedUnits[0].GetComponent<Movement>();
+
                             if (movement != null)
+                            {
+                                movement.GetComponent<ActionController>().ClearQueue();
                                 movement.RunToUnit(unit);
+                                return;
+                            }
                         }
                     }
                 }
@@ -123,7 +139,10 @@ public class General : MonoBehaviour {
 
                     Movement movement = unit.GetComponent<Movement>();
                     if (movement != null)
+                    {
+                        movement.GetComponent<ActionController>().ClearQueue();
                         movement.Run(mousePos);
+                    }
                 }
             }
         }
@@ -137,6 +156,8 @@ public class General : MonoBehaviour {
             unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(5, 9), 2);
 
             unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(2, 5), 2);
+
+            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Worker"), new Vector2(2, 4), 0);
 
             isInit = true;
         }

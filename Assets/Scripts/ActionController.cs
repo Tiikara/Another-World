@@ -29,11 +29,10 @@ public class ActionController : MonoBehaviour {
         queueActions.Enqueue(new ActionInfo(action, actionParams));
     }
 
-    public void AddMainToQueue(IAction action, IActionParameters actionParams)
+    public void ClearQueue()
     {
         activeAction = null;
         queueActions.Clear();
-        queueActions.Enqueue(new ActionInfo(action, actionParams));
     }
 
 	// Use this for initialization
@@ -54,7 +53,7 @@ public class ActionController : MonoBehaviour {
         {
             activeAction.UpdateAction();
 
-            if(activeAction.IsEndedAction())
+            if(activeAction != null && activeAction.IsEndedAction())
             {
                 activeAction = null;
             }

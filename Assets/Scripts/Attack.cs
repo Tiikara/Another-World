@@ -39,7 +39,7 @@ public class Attack : IAction {
         {
             var attackParams = new AttackParameters();
             attackParams.attackedUnit = unit;
-            GetComponent<ActionController>().AddMainToQueue(this, attackParams);
+            GetComponent<ActionController>().AddToQueue(this, attackParams);
             return;
         }
 
@@ -47,7 +47,7 @@ public class Attack : IAction {
         
         if(movement != null)
         {
-            movement.RunToUnitAttackRadius(unit);
+            movement.RunToUnitRadius(unit, AttackRadius);
 
             var attackParams = new AttackParameters();
             attackParams.attackedUnit = unit;
@@ -99,6 +99,7 @@ public class Attack : IAction {
             }
             else
             {
+                GetComponent<ActionController>().ClearQueue();
                 AttackUnit(attackedUnit);
                 attackedUnit = null;
             }
