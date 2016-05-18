@@ -13,7 +13,7 @@ public class ResourcesController : MonoBehaviour {
         text = GameObject.Find("TextResourcesCount").GetComponent<UnityEngine.UI.Text>();
 
         resources = 200;
-        text.text = resources.ToString();
+        text.text = ((int)resources).ToString();
     }
 
     public float Add(float value)
@@ -27,7 +27,7 @@ public class ResourcesController : MonoBehaviour {
             added = resources - oldRes;
         }
 
-        text.text = resources.ToString();
+        text.text = ((int)resources).ToString();
 
         return added;
     }
@@ -37,7 +37,7 @@ public class ResourcesController : MonoBehaviour {
         resources -= value;
         if (resources < 0)
             resources = 0;
-        text.text = resources.ToString();
+        text.text = ((int)resources).ToString();
     }
 
     public bool isHave(float value)

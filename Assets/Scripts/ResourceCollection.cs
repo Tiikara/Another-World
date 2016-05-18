@@ -55,7 +55,17 @@ public class ResourceCollection : IAction {
             movement.RunToUnitRadius(bunchResource.GetComponent<Unit>(), 0.3f);
             actionController.AddToQueue(this, resParams);
 
-            var mainBase = GameObject.Find("MainBase(Clone)").GetComponent<Unit>();
+            Unit mainBase = null;
+            foreach(var lMainBase in GameObject.FindGameObjectsWithTag("MainBase"))
+            {
+                var mainBaseUnit = lMainBase.GetComponent<Unit>();
+                if (mainBaseUnit.OwnerId == 
+                    GetComponent<Unit>().OwnerId)
+                {
+                    mainBase = mainBaseUnit;
+                    break;
+                }
+            }
             if(mainBase != null)
             {
                 GetComponent<UnloadResources>().UnloadToMainBaseAndCollect(mainBase, bunchResource);

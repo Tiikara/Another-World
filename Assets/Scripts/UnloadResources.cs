@@ -12,7 +12,7 @@ public class UnloadResources : IAction
 
     UnloadResourcesParameters unloadParams;
     ResourceCollection resourceCollection;
-    ResourcesController resourcesController;
+    ResourcesController resourcesController = null;
 
     float radiusUnload = 0.8f;
 
@@ -38,7 +38,10 @@ public class UnloadResources : IAction
     // Use this for initialization
     void Start () {
         resourceCollection = GetComponent<ResourceCollection>();
-        resourcesController = GameObject.FindGameObjectWithTag("GameController").GetComponent<ResourcesController>();
+
+        var gameController = GameObject.FindGameObjectWithTag("GameController");
+        if (GetComponent<Unit>().OwnerId == gameController.GetComponent<General>().ControlId)
+            resourcesController = gameController.GetComponent<ResourcesController>();
     }
 
     public override bool IsEndedAction()
@@ -70,10 +73,15 @@ public class UnloadResources : IAction
         }
         else
         {
-            float added = resourcesController.Add(resourceCollection.CurrentCollected);
-            resourceCollection.ReduceCollected(added);
+            if(resourcesController != null) // 
+            {
+                float added = resourcesController.Add(resourceCollection.CurrentCollected);
+               // resourceCollection.ReduceCollected(added);
+            }
 
-            if(unloadParams.bunchResource != null)
+            resourceCollection.ReduceCollected(99);
+
+            if (unloadParams.bunchResource != null)
             {
                 var actionController = GetComponent<ActionController>();
                 actionController.ClearQueue();

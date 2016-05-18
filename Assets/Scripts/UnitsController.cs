@@ -17,6 +17,17 @@ public class UnitsController : MonoBehaviour {
         }
     }
 
+    public Unit GetUnitById(int id)
+    {
+        foreach(Unit unit in units)
+        {
+            if (unit.Id == id)
+                return unit;
+        }
+
+        return null;
+    }
+
     public void KillUnit(Unit unit)
     {
         Instantiate(unit.OnDestroyObject, unit.transform.position, new Quaternion());

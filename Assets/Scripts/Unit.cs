@@ -2,6 +2,12 @@
 using System.Collections;
 
 public class Unit : MonoBehaviour {
+
+    static int id_increment = 0;
+
+    [HideInInspector]
+    public int Id;
+
     public string Name;
     public int OwnerId;
     public float Radius;
@@ -23,6 +29,8 @@ public class Unit : MonoBehaviour {
         {
             gameObject.AddComponent<ActionController>();
         }
+
+        Id = id_increment++;
     }
 
     void Start() {

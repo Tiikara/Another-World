@@ -19,11 +19,13 @@ public class HealthVisualization : MonoBehaviour {
         healthBar.GetComponent<SpriteRenderer>().color = Color.green;
         healthBar.transform.parent = transform;
         healthBar.transform.localPosition = new Vector2(0, localTopRight.y + 0.3f);
+        healthBar.transform.localScale = new Vector2(90, 5);
 
         healthBarBorder = Instantiate(healthBar, new Vector2(0, 0), new Quaternion()) as GameObject;
         healthBarBorder.GetComponent<SpriteRenderer>().color = new Color(0.039f, 0.478f, 0.023f);
         healthBarBorder.transform.parent = transform;
         healthBarBorder.transform.localPosition = new Vector2(0, localTopRight.y + 0.3f);
+        healthBarBorder.transform.localScale = new Vector2(90, 5);
 
         healthBar.GetComponent<SpriteRenderer>().sortingOrder = 1;
         healthBarBorder.GetComponent<SpriteRenderer>().sortingOrder = 0;

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Scripts.Networking.Actions;
 
 public class General : MonoBehaviour {
     
@@ -31,6 +32,48 @@ public class General : MonoBehaviour {
         teamInfo = GetComponent<TeamInfo>();
         
         _circleSelector = Resources.Load<GameObject>("Prefabs/Circle");
+        GameObject.Find("SceneManager").GetComponent<NetworkManager>().OnGameStart += OnGameStart;
+    }
+
+    void OnGameStart()
+    {
+        if (Network.isServer)
+        {
+            controlId = 0;
+        }
+        else if (Network.isClient)
+        {
+            controlId = 1;
+        }
+
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(5, 9), 2);
+
+        BunchResource br = unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(2, 5), 2)
+            .GetComponent<BunchResource>();
+        BunchResource br2 = unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(23.5f, 23), 2)
+            .GetComponent<BunchResource>();
+
+        br.CountResources = 200;
+        br2.CountResources = 200;
+
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/Barracks"), new Vector2(6, 6), 0);
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/Worker"), new Vector2(2, 4), 0);
+        unitsController.CreateUnit( Resources.Load<GameObject>("Units/MainBase"), new Vector2(3, 3), 0);
+
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/Barracks"), new Vector2(18, 20.5f), 1);
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/Worker"), new Vector2(22, 23.5f), 1);
+        unitsController.CreateUnit(Resources.Load<GameObject>("Units/MainBase"), new Vector2(21, 22.5f), 1);
+
+        br = unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(12.25f, 12.25f), 2)
+            .GetComponent<BunchResource>();
+        br2 = unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(2.5f, 22.5f), 2)
+            .GetComponent<BunchResource>();
+        BunchResource br3 = unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(23, 1.5f), 2)
+            .GetComponent<BunchResource>();
+
+        br.CountResources = 1200;
+        br2.CountResources = 600;
+        br3.CountResources = 600;
     }
 	
 	// Update is called once per frame
@@ -102,9 +145,8 @@ public class General : MonoBehaviour {
 
                             if (attack == null)
                                 break;
-
-                            attack.GetComponent<ActionController>().ClearQueue();
-                            attack.AttackUnit(unit);
+                            
+                            LockStepManager.Instance.AddAction(new NetworkActionAttack(selectedUnits[0], unit));
                             return;
                         }
                         else if(selectedUnits[0].GetComponent<ResourceCollection>() != null && 
@@ -113,8 +155,8 @@ public class General : MonoBehaviour {
                             var bunchRes = unit.GetComponent<BunchResource>();
                             var resColl = selectedUnits[0].GetComponent<ResourceCollection>();
 
-                            resColl.GetComponent<ActionController>().ClearQueue();
-                            resColl.CollectResource(bunchRes);
+                            LockStepManager.Instance.AddAction(new NetworkActionCollectResource(selectedUnits[0],
+                                bunchRes));
                             return;
                         }
                         else
@@ -123,8 +165,7 @@ public class General : MonoBehaviour {
 
                             if (movement != null)
                             {
-                                movement.GetComponent<ActionController>().ClearQueue();
-                                movement.RunToUnit(unit);
+                                LockStepManager.Instance.AddAction(new NetworkActionMovementToUnit(selectedUnits[0], unit));
                                 return;
                             }
                         }
@@ -140,26 +181,14 @@ public class General : MonoBehaviour {
                     Movement movement = unit.GetComponent<Movement>();
                     if (movement != null)
                     {
-                        movement.GetComponent<ActionController>().ClearQueue();
-                        movement.Run(mousePos);
+                        NetworkActionMovement na = new NetworkActionMovement(unit, mousePos);
+                        LockStepManager.Instance.AddAction(na);
+                       // movement.GetComponent<ActionController>().ClearQueue();
+                       // movement.Run(mousePos);
                     }
                 }
             }
         }
-
-        if(isInit == false)
-        {
-            GameObject barracks = Resources.Load<GameObject>("Units/Barracks");
-            unitsController.CreateUnit(barracks, new Vector2(6, 6), 0);
-
-            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(9, 9), 1);
-            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Soldier"), new Vector2(5, 9), 2);
-
-            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Mineral"), new Vector2(2, 5), 2);
-
-            unitsController.CreateUnit(Resources.Load<GameObject>("Units/Worker"), new Vector2(2, 4), 0);
-
-            isInit = true;
-        }
+        
     }
 }

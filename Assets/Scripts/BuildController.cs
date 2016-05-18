@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using Assets.Scripts.Networking.Actions;
 
 public class BuildController : MonoBehaviour {
 
-    Queue<BuildInfo> queueBuildUnits = new Queue<BuildInfo>();
-    BuildInfo buildInfo = null;
-    double startTimeSecsBuilding = -1;
 
-    GameObject barracks;
+    Queue<int> queueIdBuildUnits = new Queue<int>();
+    
+    public List<GameObject> ObjectsToBuild;
+    BuildInfo buildInfo = null;
+    int curIdBuild;
+    double startTimeSecsBuilding = -1;
 
     UnitsController unitsController;
     ResourcesController resourcesController;
@@ -31,14 +34,23 @@ public class BuildController : MonoBehaviour {
         resourcesController = GetComponent<ResourcesController>();
     }
 
-    public void OnClickBuildUnit(GameObject unit)
+    public GameObject GetObjectBuildById(int id)
     {
-        BuildInfo buildInfo = unit.GetComponent<BuildInfo>();
+        return ObjectsToBuild[id];
+    }
+
+
+    public void OnClickBuildUnit(int idBuildUnit)
+    {
+        if (this.buildInfo != null || queueIdBuildUnits.Count != 0)
+            return;
+
+        BuildInfo buildInfo = ObjectsToBuild[idBuildUnit].GetComponent<BuildInfo>();
 
         if(resourcesController.isHave(buildInfo.Cost))
         {
             resourcesController.Reduce(buildInfo.Cost);
-            queueBuildUnits.Enqueue(buildInfo);
+            queueIdBuildUnits.Enqueue(idBuildUnit);
             StartBuild();
         }
     }
@@ -47,9 +59,10 @@ public class BuildController : MonoBehaviour {
     {
         if (buildInfo == null)
         {
-            if(queueBuildUnits.Count != 0)
+            if(queueIdBuildUnits.Count != 0)
             {
-                buildInfo = queueBuildUnits.Dequeue();
+                curIdBuild = queueIdBuildUnits.Dequeue();
+                buildInfo = ObjectsToBuild[curIdBuild].GetComponent<BuildInfo>();
                 startTimeSecsBuilding = DateTime.Now.Subtract(timeUtc).TotalSeconds;
                 lastProgressValue = 0;
                 OnStartBuild(buildInfo.GetComponent<Unit>().Name);
@@ -70,10 +83,41 @@ public class BuildController : MonoBehaviour {
 
             if(startTimeSecsBuilding + buildInfo.TimeBuildSec < nowSeconds)
             {
-                var unit = unitsController.CreateUnit(buildInfo.gameObject, barracks.transform.position, 0);
-                unit.GetComponent<Movement>().Run(new Vector2(barracks.transform.position.x - 0.9f, barracks.transform.position.y - 0.9f));
-                buildInfo = null;
-                StartBuild();
+                GameObject barrack = null;
+
+                foreach (var _barrack in GameObject.FindGameObjectsWithTag("Barrack"))
+                {
+                    if(_barrack.GetComponent<Unit>().OwnerId == GetComponent<General>().ControlId)
+                    {
+                        barrack = _barrack;
+                        break;
+                    }
+                }
+                
+                if(barrack != null)
+                {
+                    LockStepManager.Instance.AddAction(new NetworkActionCreateUnitWithMove(curIdBuild,
+                        GetComponent<General>().ControlId, barrack.transform.position,
+                        new Vector2(barrack.transform.position.x - 0.9f, barrack.transform.position.y - 0.9f)));
+                    buildInfo = null;
+                    StartBuild();
+                }
+                else
+                {
+                    resourcesController.Add(buildInfo.Cost);
+                    buildInfo = null;
+                    
+                    // Clear build queue and return costs
+                    foreach (var buildIdInfoQ in queueIdBuildUnits)
+                    {
+                        resourcesController.Add(ObjectsToBuild[buildIdInfoQ].GetComponent<BuildInfo>().Cost);
+                    }
+
+                    queueIdBuildUnits.Clear();
+                    OnFinishBuild();
+                }
+                
+                
             }
             else
             {
@@ -85,11 +129,6 @@ public class BuildController : MonoBehaviour {
                     OnUpdateProgressBuild(progress);
                 }
             }
-        }
-
-        if(barracks == null)
-        {
-            barracks = GameObject.Find("Barracks(Clone)");
         }
 	}
 }

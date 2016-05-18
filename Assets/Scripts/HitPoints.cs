@@ -14,7 +14,7 @@ public class HitPoints : MonoBehaviour {
         Health -= damage;
         healthVisualization.SetValue(Health / maxHealth);
 
-        if (Health < 0)
+        if (Health <= 0)
         {
             Health = 0;
             GameObject.FindGameObjectWithTag("GameController").GetComponent<UnitsController>().KillUnit(GetComponent<Unit>());

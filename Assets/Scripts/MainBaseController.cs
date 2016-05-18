@@ -14,9 +14,5 @@ public class MainBaseController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    if(mainBase == null)
-            mainBase = GetComponent<UnitsController>().CreateUnit(
-            Resources.Load<GameObject>("Units/MainBase"),
-            new Vector2(3, 3), 0);
     }
 }
