@@ -22,27 +22,32 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(NetworkView))]
-public class NetworkManager : MonoBehaviour {
+public class NetworkManager : NetworkBehaviour {
 	
 	//private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 	
 	private string gameTypeName = "Sample_LockStep_Network";
 	private bool refreshing = false;
 	private HostData[] hostData;
-	//TODO: Add ability to allow hosting user to set this number
-	public int NumberOfPlayers = 1;
+    //TODO: Add ability to allow hosting user to set this number
+    public int NumberOfPlayers = 1;
 	
 	public Dictionary<string, NetworkPlayer> players;
+    public Dictionary<string, int> playersIds = new Dictionary<string, int>();
 	
 	float btnX;
 	float btnY;
 	float btnW;
 	float btnH;
 
-    string ipAddress = "IP Address";
+    string sIpAddress = "IP Address";
     int port = 25001;
+
+    string sNumberOfPlayers = "2";
 	
 	public delegate void NetworkManagerEvent();
 	public NetworkManagerEvent OnConnectedToGame;
@@ -73,9 +78,10 @@ public class NetworkManager : MonoBehaviour {
 	}
 	
 	private void startServer() {
-		//log.Debug("startServer called");
-		
-		bool useNAT = !Network.HavePublicAddress();
+        //log.Debug("startServer called");
+        NumberOfPlayers = Convert.ToInt32(sNumberOfPlayers);
+
+        bool useNAT = !Network.HavePublicAddress();
 		Network.InitializeServer(32, port, useNAT);
 		MasterServer.RegisterHost (gameTypeName, "Sample_Game_Name", NetworkHostMessages.GenerateHostComment(NumberOfPlayers));
 	}
@@ -99,7 +105,9 @@ public class NetworkManager : MonoBehaviour {
 			OnConnectedToGame();
 		}
 
-		players.Add (Network.player.ToString(), Network.player);
+        playersIds.Add(Network.player.ToString(), playersIds.Count);
+        players.Add (Network.player.ToString(), Network.player);
+        
 		if(NumberOfPlayers == 1) {
 			StartGame ();
 		}
@@ -110,18 +118,22 @@ public class NetworkManager : MonoBehaviour {
 	}
 	
 	private void OnPlayerConnected (NetworkPlayer player) {
-		players.Add (player.ToString(), player);
-		//log.Debug ("OnPlayerConnected, playerID:" + player.ToString());
-		//log.Debug ("Player Count : " + players.Count);
-		//Once all expected players have joined, send all clients the list of players
-		if(players.Count == NumberOfPlayers) {
-			foreach(NetworkPlayer p in players.Values) {
-				//log.Debug ("Calling RegisterPlayerAll...");
-				nv.RPC("RegisterPlayerAll", RPCMode.Others, p);
+        players.Add (player.ToString(), player);
+        playersIds.Add(player.ToString(), playersIds.Count);
+        //log.Debug ("OnPlayerConnected, playerID:" + player.ToString());
+        //log.Debug ("Player Count : " + players.Count);
+        //Once all expected players have joined, send all clients the list of players
+        if (players.Count == NumberOfPlayers) {
+            foreach (NetworkPlayer p in players.Values) {
+                //log.Debug ("Calling RegisterPlayerAll...");
+                nv.RPC("RegisterPlayerAll", RPCMode.Others, p);
+                nv.RPC("RegisterIDsPlayerAll", RPCMode.Others, new object[] { p, playersIds[p.ToString()] });
 			}
-			
-			//start the game
-			nv.RPC ("StartGame", RPCMode.All);
+
+            nv.RPC("SyncNumberOfPlayers", RPCMode.Others, NumberOfPlayers);
+
+            //start the game
+            nv.RPC ("StartGame", RPCMode.All);
 		}
 	}
 	
@@ -133,15 +145,30 @@ public class NetworkManager : MonoBehaviour {
 		//log.Debug ("Register Player All called for " + player.ToString());
 		players.Add (player.ToString(), player);
 	}
-	
+
+    /// <summary>
+	/// Called on clients only. Passes all connected players to be added to the players dictionary.
+	/// </summary>
 	[RPC]
+    public void RegisterIDsPlayerAll(NetworkPlayer player, int id)
+    {
+        //log.Debug ("Register Player All called for " + player.ToString());
+        playersIds.Add(player.ToString(), id);
+    }
+
+    [RPC]
 	public void StartGame() {
-		//log.Debug ("StartGame called");
-		//send the start of game event
-		if(OnGameStart!=null) {
+        //log.Debug ("StartGame called");
+        //send the start of game event
+        if (OnGameStart!=null) {
 			OnGameStart();
 		}
 	}
+    [RPC]
+    public void SyncNumberOfPlayers(int number)
+    {
+        NumberOfPlayers = number;
+    }
 	
 	void OnDisconnectedFromServer(NetworkDisconnection info) {
         //if (Network.isServer)
@@ -157,21 +184,36 @@ public class NetworkManager : MonoBehaviour {
 	#region GUI
 	private void OnGUI() {
 		if(!Network.isClient && !Network.isServer) {
-			if(GUI.Button (new Rect(btnX, btnY, btnW, btnH), "Start Server")) {
+            string newNumberOfPlayers = GUI.TextField(new Rect(btnX, btnY - btnH - 3.0f, btnW, btnH * 0.4f), sNumberOfPlayers);
+
+            if(newNumberOfPlayers != sNumberOfPlayers)
+            {
+                try
+                {
+                    int count = Convert.ToInt32(newNumberOfPlayers);
+                    if(count > 0 && count < 5)
+                        sNumberOfPlayers = newNumberOfPlayers;
+                } catch(Exception) {}
+            }
+            
+
+            GUI.Label(new Rect(btnX + btnW + 3.0f, btnY - btnH - 3.0f, btnW * 10, btnH * 0.4f), "Number of Players");
+
+            if (GUI.Button (new Rect(btnX, btnY, btnW, btnH), "Start Server")) {
 				//log.Debug ("Starting Server");
 				startServer();
 			}
 			
-			if(GUI.Button (new Rect(btnX, btnY * 1.2f + btnH, btnW, btnH), "Refresh Hosts")) {
+			if(GUI.Button (new Rect(btnX, btnY + btnH + 3.0f, btnW, btnH), "Refresh Hosts")) {
 				//log.Debug ("Refreshing Hosts");
 				refreshHostList();
 			}
 
-            ipAddress = GUI.TextField(new Rect(btnX, btnY * 1.2f + btnH + btnH + 3.0f, btnW, btnH * 0.4f), ipAddress);
+            sIpAddress = GUI.TextField(new Rect(btnX, btnY + btnH + 3.0f + btnH + 3.0f, btnW, btnH * 0.4f), sIpAddress);
 
-            if (GUI.Button(new Rect(btnX + btnW + 3.0f, btnY * 1.2f + btnH + btnH + 3.0f, btnW, btnH * 0.4f), "Connect by IP"))
+            if (GUI.Button(new Rect(btnX + btnW + 3.0f, btnY + btnH + 3.0f + btnH + 3.0f, btnW, btnH * 0.4f), "Connect by IP"))
             {
-                Network.Connect(ipAddress, port);
+                Network.Connect(sIpAddress, port);
             }
 
             if (hostData!=null) {

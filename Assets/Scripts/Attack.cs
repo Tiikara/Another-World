@@ -12,6 +12,7 @@ public class Attack : IAction {
     public float Damage;
     public float AttackPerSecond;
     public float AttackRadius;
+    public GameObject Bullet;
 
     float attackCooldown;
 
@@ -89,7 +90,17 @@ public class Attack : IAction {
                 {
                     var hitpoints = attackedUnit.GetComponent<HitPoints>();
 
-                    hitpoints.DealDamage(Damage);
+                    if(Bullet != null)
+                    {
+                        var bullet = (Instantiate(Bullet, transform.position, new Quaternion()) as GameObject)
+                            .GetComponent<IBullet>();
+                        bullet.SetDamage(Damage);
+                        bullet.SetTargetPosition(attackedUnitPos);
+                    }
+                    else
+                    {
+                        hitpoints.DealDamage(Damage);
+                    }
 
                     timeLastAttack = DateTime.Now;
 

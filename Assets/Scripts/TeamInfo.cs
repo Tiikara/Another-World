@@ -7,18 +7,21 @@ public class TeamInfo : MonoBehaviour {
         Neutral, War, Ally
     }
 
-    Status[,] matrixStatus = new Status[3,3];
+    Status[,] matrixStatus = new Status[5,5];
     Color[] colorStatus = new Color[3];
 	// Use this for initialization
 	void Start () {
-	    for(int i=0;i<3;i++)
+	    for(int i=0;i<5;i++)
         {
-            for(int j=0;j<3;j++)
+            for(int j=0;j<5;j++)
             {
-                matrixStatus[i, j] = Status.Neutral;
+                matrixStatus[i, j] = Status.War;
             }
         }
-        SetStatus(0, 1, Status.War);
+        SetStatus(0, 4, Status.Neutral);
+        SetStatus(1, 4, Status.Neutral);
+        SetStatus(2, 4, Status.Neutral);
+        SetStatus(3, 4, Status.Neutral);
 
         colorStatus[(int)Status.War] = Color.red;
         colorStatus[(int)Status.War] = Color.red;
