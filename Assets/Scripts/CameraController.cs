@@ -5,6 +5,7 @@ public class CameraController : MonoBehaviour {
 
     bool pressedButton = false;
     Vector2 startWorldPosition;
+    public float SpeedMovement;
 
     MapLoader mapLoader;
 
@@ -54,6 +55,35 @@ public class CameraController : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        
+        if(Input.GetButton("UpCamera"))
+        {
+            float step = SpeedMovement * Time.deltaTime;
+            var curPos = Camera.main.transform.position;
+            Camera.main.transform.position = new Vector3(curPos.x, curPos.y + step, curPos.z);
+        }
+
+        if (Input.GetButton("DownCamera"))
+        {
+            float step = SpeedMovement * Time.deltaTime;
+            var curPos = Camera.main.transform.position;
+            Camera.main.transform.position = new Vector3(curPos.x, curPos.y - step, curPos.z);
+        }
+
+        if (Input.GetButton("LeftCamera"))
+        {
+            float step = SpeedMovement * Time.deltaTime;
+            var curPos = Camera.main.transform.position;
+            Camera.main.transform.position = new Vector3(curPos.x - step, curPos.y, curPos.z);
+        }
+
+        if (Input.GetButton("RightCamera"))
+        {
+            float step = SpeedMovement * Time.deltaTime;
+            var curPos = Camera.main.transform.position;
+            Camera.main.transform.position = new Vector3(curPos.x + step, curPos.y + step, curPos.z);
+        }
+
         if (Input.GetMouseButtonDown(2))
         {
             startWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
